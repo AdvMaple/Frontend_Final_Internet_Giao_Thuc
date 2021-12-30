@@ -18,7 +18,6 @@ export default function TodoList(props) {
 
   return (
     <div className="border">
-      {/* <ul>{renderList()}</ul> */}
       <List
         style={{ background: "white" }}
         size="small"
@@ -28,7 +27,11 @@ export default function TodoList(props) {
         renderItem={(item, key) => {
           return (
             <List.Item key={key}>
-              <Button value={key} onClick={() => onClick(item.id)}>
+              <Button
+                value={key}
+                onClick={() => onClick(item.id)}
+                type={item.id === props.current ? "primary" : ""}
+              >
                 {item.name}
               </Button>
             </List.Item>

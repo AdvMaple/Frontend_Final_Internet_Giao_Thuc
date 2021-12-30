@@ -1,7 +1,10 @@
-import { Button, Row, Col, Form, Input, Upload } from "antd";
+import { Button, Row, Col, Form, Input, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Post from "./Post";
+import { apiGetBlog, apiPostBlog, apiUpload, api_url } from "../../utils/Api";
+import axios from "axios";
+import { UserContext } from "../../utils/UserContext";
 
 const BLOG_DATA = [
   {
@@ -21,10 +24,15 @@ const BLOG_DATA = [
 ];
 
 export default function Blog() {
+  const { user } = useContext(UserContext);
   const [blogData, setBlogData] = useState([]);
+  const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
-    setBlogData(BLOG_DATA);
+    apiGetBlog().then((r) => {
+      // console.log(r.data.results);
+      setBlogData(r.data.results);
+    });
   }, []);
 
   const renderBlogs = () => {
@@ -34,12 +42,33 @@ export default function Blog() {
   };
 
   const handlePost = (e) => {
-    console.log(e);
+    if (user) {
+      let formData = new FormData();
+      formData.append("attached_file", fileList[0]?.originFileObj);
+
+      axios
+        .post(`${api_url}/upload/`, formData)
+        .finally((res) => {
+          let data = {
+            attachment: res?.data?.attached_file,
+            content: e.content,
+            user_id: user.id,
+          };
+          apiPostBlog(data)
+            .then((r) => {
+              console.log(r);
+            })
+            .catch((r) => console.log(r));
+        })
+        .catch((err) => {
+          console.log("err", err);
+        });
+    }
   };
 
   return (
-    <Row className="BlogPage">
-      <Col span={24 / 2}>
+    <Row className="BlogPage px-5">
+      <Col span={24}>
         <div>
           <h6>Đăng bài viết mới</h6>
           <Form onFinish={handlePost}>
@@ -57,9 +86,19 @@ export default function Blog() {
               <Input.TextArea autoSize={false} />
             </Form.Item>
 
-            <Form.Item name="attachment">
-              <Upload>
-                <Button icon={<UploadOutlined />}>Click to Upload</Button>
+            <Form.Item name="attached_file">
+              <Upload
+                maxCount={1}
+                name="attached_file"
+                action={`${api_url}/upload`}
+                listType="picture"
+                onChange={({ fileList }) => {
+                  console.log("fileList", fileList);
+                  setFileList(fileList);
+                }}
+                beforeUpload={() => false}
+              >
+                <Button icon={<UploadOutlined />}>Click to upload</Button>
               </Upload>
             </Form.Item>
 

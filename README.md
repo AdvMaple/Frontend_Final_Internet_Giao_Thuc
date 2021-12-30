@@ -2,12 +2,8 @@
 
 - Thành viên:
   - Kiều Mạnh Dũng - B18DCVT062
-  - Nguyễn Minh Cường - B18DCVT042
-  - Đặng Việt Dũng - B18DCVT058
-
-## Link web
-
-https://advmaple-internet-giao-thuc.herokuapp.com/
+  - Vũ Quang Huy - B18DCVT206
+  - Kim Ngọc Hùng - B18DCVT182
 
 ## Hướng dẫn cài đặt
 

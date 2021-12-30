@@ -24,8 +24,8 @@ function RouteCard(props) {
         style={{ background: props.background }}
       >
         <div className="d-flex flex-column">
-          <span style={{ "font-size": "1.5rem" }}>{props.title}</span>
-          <span style={{ "font-size": "1rem" }}>{props.des}</span>
+          <span style={{ fontSize: "1.5rem" }}>{props.title}</span>
+          <span style={{ fontSize: "1rem" }}>{props.des}</span>
         </div>
         <div className="mx-2">{props.icon}</div>
       </div>

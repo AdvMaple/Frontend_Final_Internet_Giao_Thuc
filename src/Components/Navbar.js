@@ -29,7 +29,7 @@ export default function Navbar(props) {
     <nav>
       <Menu theme="" mode="horizontal">
         {renderRoute()}
-        <Menu.Item>
+        <Menu.Item key={"login"}>
           <div>
             <Avatar
               shape="circle"
@@ -40,7 +40,10 @@ export default function Navbar(props) {
             </Avatar>
             {user?.id ? (
               <Button
-                onClick={() => setUser(null)}
+                onClick={() => {
+                  setUser(null);
+                  window.location.reload();
+                }}
                 className="mx-3"
                 type="primary"
                 size="small"
