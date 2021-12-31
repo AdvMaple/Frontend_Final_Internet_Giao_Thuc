@@ -1,159 +1,189 @@
 import { ScoresChart } from "./ScoresChart";
-import { Table, Row, Col, Form, Input, Button } from "antd";
+import {
+  Table,
+  Row,
+  Col,
+  Form,
+  Input,
+  Button,
+  Pagination,
+  Modal,
+  Checkbox,
+  InputNumber,
+} from "antd";
 import ClassList from "../Student/ClassList";
-import { apiGetClass, apiGetStudent, apiPostClass } from "../../utils/Api";
+import {
+  apiGetClass,
+  apiGetStudent,
+  apiPatchStudent,
+  apiPostClass,
+  apiPostStudent,
+  openNotificationWithIcon,
+} from "../../utils/Api";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../utils/UserContext";
+import Item from "antd/lib/list/Item";
 
-const SCORES_DATA = [
-  {
-    names: "Vũ Quang Huy",
-    studentId: "B18DCVT062",
-    ccScore: "9",
-    thScore: "10",
-    finalScore: "10",
-  },
-  {
-    names: "Kiều Mạnh Dũng",
-    studentId: "B18DCVT062",
-    ccScore: "7",
-    thScore: "10",
-    finalScore: "10",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "5",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "6",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "7",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "5",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "4",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9.5",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-  {
-    names: "Nguyễn Văn A",
-    studentId: "B18DCVT062",
-    ccScore: "1",
-    thScore: "8",
-    finalScore: "9",
-  },
-];
+function StudentEditModal({ visible, onCreate, onCancel, studentData }) {
+  const [form] = Form.useForm();
+  const [data, setData] = useState();
+  useEffect(() => {
+    setData(studentData);
+  }, [studentData]);
+
+  return (
+    <Modal
+      visible={visible}
+      title="Sửa thông tin sinh viên"
+      okText="Sửa"
+      cancelText="Hủy"
+      onCancel={onCancel}
+      onOk={() => {
+        form
+          .validateFields()
+          .then((values) => {
+            form.resetFields();
+            onCreate(values);
+          })
+          .catch((info) => {
+            console.log("Validate Failed:", info);
+          });
+      }}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        name="form_in_modal"
+        initialValues={{
+          diem_CC: data?.diem_CC,
+          diem_TH: data?.diem_TH,
+          diem_Final: data?.diem_TH,
+        }}
+      >
+        <div className="p-3">
+          <Form.Item label="Họ và tên" name="name">
+            <Input placeholder={data?.name}></Input>
+          </Form.Item>
+          <Form.Item label="Mã sinh viên" name="studentId">
+            <Input placeholder={data?.studentId}></Input>
+          </Form.Item>
+
+          <Form.Item label="Quê quán" name="placeOfBirth">
+            <Input placeholder={data?.placeOfBirth}></Input>
+          </Form.Item>
+          <Form.Item label="Điểm chuyên cần" name="diem_CC">
+            <InputNumber min="0" max="10" step="0.01"></InputNumber>
+          </Form.Item>
+
+          <Form.Item label="Điểm thực hành" name="diem_TH">
+            <InputNumber min="0" max="10" step="0.01"></InputNumber>
+          </Form.Item>
+
+          <Form.Item label="Điểm cuối kỳ" name="diem_Final">
+            <InputNumber min="0" max="10" step="0.01"></InputNumber>
+          </Form.Item>
+        </div>
+      </Form>
+    </Modal>
+  );
+}
+
+function StudentCreateModal({ visible, onCreate, onCancel, current }) {
+  const [form] = Form.useForm();
+
+  return (
+    <Modal
+      visible={visible}
+      title={`Thêm sinh viên cho lớp`}
+      okText="Thêm mới"
+      cancelText="Hủy"
+      onCancel={onCancel}
+      onOk={() => {
+        form
+          .validateFields()
+          .then((values) => {
+            form.resetFields();
+            onCreate(values);
+          })
+          .catch((info) => {
+            console.log("Validate Failed:", info);
+          });
+      }}
+    >
+      <Form
+        form={form}
+        name="form_in_modal"
+        labelCol={{
+          span: 8,
+        }}
+        wrapperCol={{
+          span: 16,
+        }}
+      >
+        <div className="p-3">
+          <Form.Item
+            label="Họ và tên"
+            name="name"
+            rules={[
+              {
+                required: true,
+                message: "Họ tên không được bỏ trống!",
+              },
+            ]}
+          >
+            <Input></Input>
+          </Form.Item>
+          <Form.Item
+            label="Mã sinh viên"
+            name="studentId"
+            rules={[
+              {
+                required: true,
+                message: "Mã sinh viên không được bỏ trống!",
+              },
+            ]}
+          >
+            <Input></Input>
+          </Form.Item>
+
+          <Form.Item label="Điểm chuyên cần" name="diem_CC">
+            <InputNumber
+              defaultValue="0"
+              min="0"
+              max="10"
+              step="0.01"
+            ></InputNumber>
+          </Form.Item>
+
+          <Form.Item label="Điểm thực hành" name="diem_TH">
+            <InputNumber
+              defaultValue="0"
+              min="0"
+              max="10"
+              step="0.01"
+            ></InputNumber>
+          </Form.Item>
+
+          <Form.Item label="Điểm cuối kỳ" name="diem_Final">
+            <InputNumber
+              defaultValue="0"
+              min="0"
+              max="10"
+              step="0.01"
+            ></InputNumber>
+          </Form.Item>
+        </div>
+      </Form>
+    </Modal>
+  );
+}
 
 function AddClass(props) {
   return (
-    <div>
+    <div className="mt-3">
       <Form onFinish={props.onFinish}>
         <Form.Item name="name">
-          <Input></Input>
+          <Input placeholder="Tên lớp"></Input>
         </Form.Item>
 
         <Form.Item>
@@ -170,6 +200,10 @@ export default function Scores() {
   const { user } = useContext(UserContext);
   const [classList, setClassList] = useState([]);
   const [students, setStudents] = useState([]);
+  const [pagination, setPagination] = useState();
+  const [editStudentModal, setEditStudentModal] = useState(false);
+  const [createStudentModal, setCreateStudentModal] = useState(false);
+  const [currentClass, setCurrentClass] = useState();
   const [student, setStudent] = useState({
     id: "",
     name: "",
@@ -183,15 +217,116 @@ export default function Scores() {
     diem_Final: "",
     classId: "",
   });
-  let scoreArray = [];
+
   useEffect(() => {
     if (user) {
-      apiGetClass(user).then((r) => {
+      let data = {
+        id: user.id,
+      };
+      apiGetClass(data).then((r) => {
         setClassList(r.data.results);
+        setPagination(r.data);
       });
     }
   }, []);
 
+  const handleEditStudent = async (e) => {
+    console.log("form: ", e);
+    console.log("student", student);
+
+    setEditStudentModal(!editStudentModal);
+    let data = {
+      id: student.id,
+      classId: currentClass,
+      studentId: e?.studentId ? e?.studentId : student?.studentId,
+      currentResident: e?.currentResident
+        ? e?.currentResident
+        : student?.currentResident,
+      placeOfBirth: e?.placeOfBirth ? e?.placeOfBirth : student?.placeOfBirth,
+      isMale: e?.isMale ? e?.isMale : student?.isMale,
+      hasPaidTuition: e?.hasPaidTuition
+        ? e?.hasPaidTuition
+        : student?.hasPaidTuition,
+      diem_CC: e?.diem_CC ? e?.diem_CC : student?.diem_CC,
+      diem_TH: e?.diem_TH ? e?.diem_TH : student?.diem_TH,
+      diem_Final: e?.diem_Final ? e?.diem_Final : student?.diem_Final,
+      name: e?.name ? e?.name : student?.name,
+    };
+    const r = await apiPatchStudent(data);
+    if (r.status === 200) {
+      openNotificationWithIcon("success", "Sửa thông tin học sinh thành công");
+    } else {
+      openNotificationWithIcon(
+        "error",
+        "Đã có lỗi trong quá trình sửa thông tin"
+      );
+    }
+    console.log(currentClass);
+    apiGetStudent(currentClass)
+      .then((r) => {
+        setStudents(r.data.results);
+      })
+      .catch((r) => {
+        console.log(r);
+      });
+  };
+
+  const handleCreateStudent = async (e) => {
+    setCreateStudentModal(!createStudentModal);
+    console.log(currentClass);
+
+    if (currentClass) {
+      let data = {
+        id: student.id,
+        classId: currentClass,
+        studentId: e?.studentId ? e?.studentId : student?.studentId,
+        currentResident: e?.currentResident
+          ? e?.currentResident
+          : student?.currentResident,
+        placeOfBirth: e?.placeOfBirth ? e?.placeOfBirth : student?.placeOfBirth,
+        isMale: e?.isMale ? e?.isMale : student?.isMale,
+        hasPaidTuition: e?.hasPaidTuition
+          ? e?.hasPaidTuition
+          : student?.hasPaidTuition,
+        diem_CC: e?.diem_CC ? e?.diem_CC : student?.diem_CC,
+        diem_TH: e?.diem_TH ? e?.diem_TH : student?.diem_TH,
+        diem_Final: e?.diem_Final ? e?.diem_Final : student?.diem_Final,
+        name: e?.name ? e?.name : student?.name,
+      };
+      const r = await apiPostStudent(data);
+      if (r.status === 201) {
+        openNotificationWithIcon("success", "Thêm học sinh thành công");
+      } else {
+        openNotificationWithIcon(
+          "error",
+          "Đã có lỗi trong quá trình thêm học sinh"
+        );
+      }
+      console.log(currentClass);
+      apiGetStudent(currentClass)
+        .then((r) => {
+          setStudents(r.data.results);
+        })
+        .catch((r) => {
+          console.log(r);
+        });
+    } else {
+      openNotificationWithIcon("error", "Bạn phải chọn lớp trước!");
+    }
+  };
+
+  const handleChangePage = (e) => {
+    let data = {
+      id: user.id,
+      page: e,
+    };
+    apiGetClass(data).then((r) => {
+      setClassList(r.data.results);
+      setCurrentClass(classList[0]);
+    });
+  };
+
+  let scoreArray = [];
   const columns = [
     { title: "Họ và tên", key: "name", dataIndex: "name" },
     { title: "Mã sinh viên", key: "studentId", dataIndex: "studentId" },
@@ -214,7 +349,7 @@ export default function Scores() {
   ];
 
   const handleChangeClass = (e) => {
-    console.log(e);
+    setCurrentClass(e);
     apiGetStudent(e)
       .then((r) => {
         // console.log(r.data.results);
@@ -237,20 +372,60 @@ export default function Scores() {
     }
   };
 
+  const handleRowClick = (record, rowIndex) => {
+    return {
+      onClick: (e) => {
+        setEditStudentModal(!editStudentModal);
+        setStudent(record);
+      },
+    };
+  };
   return (
     <div className="ScorePage">
       <Row>
         <Col span={4}>
           <ClassList list={classList} onClick={handleChangeClass} />
+          <Pagination
+            onChange={handleChangePage}
+            defaultCurrent={1}
+            total={pagination?.count ? pagination?.count : 1}
+          ></Pagination>
           <AddClass onFinish={handleAddClass}></AddClass>
+          <Button
+            onClick={() => {
+              setCreateStudentModal(!createStudentModal);
+            }}
+          >
+            Thêm sinh viên
+          </Button>
         </Col>
         <Col span={24 - 4}>
-          <Table columns={columns} dataSource={students} />
+          <Table
+            onRow={handleRowClick}
+            columns={columns}
+            dataSource={students}
+            pagination={false}
+          />
         </Col>
       </Row>
-      <div style={{ width: "450px" }}>
+      <div className="bg" style={{ width: "450px" }}>
         <ScoresChart data={scoreArray} />
       </div>
+      <StudentEditModal
+        onCreate={handleEditStudent}
+        onCancel={() => {
+          setEditStudentModal(!editStudentModal);
+        }}
+        visible={editStudentModal}
+        studentData={student}
+      />
+      <StudentCreateModal
+        onCreate={handleCreateStudent}
+        onCancel={() => {
+          setCreateStudentModal(!createStudentModal);
+        }}
+        visible={createStudentModal}
+      />
     </div>
   );
 }

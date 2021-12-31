@@ -1,113 +1,121 @@
-import { Button, Row, Col, Form, Input } from "antd";
+import { Button, Row, Col, Form, Input, Empty } from "antd";
 import { useContext, useEffect, useState } from "react";
 import TodoDetail from "./TodoDetail";
 import TodoList from "./TodoList";
-import { apiGetUserTodoList, apiPostUserTodoList } from "../../utils/Api";
+import {
+  apiDeleteTodoList,
+  apiGetUserTodoList,
+  apiGetUserTodoListDetail,
+  apiPatchUserTodoListDetail,
+  apiPostTodoDetail,
+  apiPostUserTodoList,
+  openNotificationWithIcon,
+} from "../../utils/Api";
 import { UserContext } from "../../utils/UserContext";
-
-const ListAPI = [];
-const ListDetail = [];
 
 export default function Todo() {
   const { user, setUser } = useContext(UserContext);
-
   const [list, setList] = useState([]);
   const [currentList, setCurrentList] = useState(0);
-  const [detail, setDetail] = useState();
+  const [detail, setDetail] = useState([{ id: "", name: "", state: "" }]);
+  let nextListurl = "";
+  let prevListurl = "";
 
   useEffect(() => {
     if (user) {
       const { id } = user;
-
       apiGetUserTodoList({ user_id: id }).then((r) => setList(r.data.results));
     }
-    // setList(ListAPI);
-    // setDetail(ListDetail[0]);
   }, []);
 
-  const handleReload = () => {
+  useEffect(async () => {
+    const r = await apiGetUserTodoListDetail(currentList);
+    setDetail(r.data.results);
+  }, [currentList]);
+
+  const handleReload = async () => {
     const { id } = user;
-    apiGetUserTodoList({ user_id: id }).then((r) => {
-      setList(r.data.results);
-      console.log(r.data.results);
-    });
+    const r = await apiGetUserTodoList({ user_id: id });
+    console.log(r);
+    if (r.data.next !== null) {
+      nextListurl = r.data.next;
+    }
+    if (r.data.previous !== null) {
+      prevListurl = r.data.previous;
+    }
+    setList(r.data.results);
   };
 
-  const handleChangeList = (list_id) => {
-    // console.log(list_id);
+  const handleChangeList = async (list_id) => {
     setCurrentList(list_id);
-    // setDetail(ListDetail[list_id]);
-    // console.log(key);
   };
 
-  const handleChangeStatus = (e) => {
-    setDetail((pre) => {
-      let item = pre.detail.find(
-        (item) =>
-          item.taskName === e.taskName && item.status === parseInt(e.status)
-      );
-      switch (e.changeType) {
-        case "dec":
-          item.status = item.status - 1;
-          break;
-        case "inc":
-          item.status = item.status + 1;
-          break;
-        default:
-          break;
-      }
-      return { ...pre, item };
-    });
+  const handleChangeState = async (e) => {
+    console.log(e);
+
+    let d = {
+      id: e.id,
+      state:
+        e.changeType === "inc" ? parseInt(e.state) + 1 : parseInt(e.state) - 1,
+    };
+    console.log(d);
+    const r = await apiPatchUserTodoListDetail(d);
+    const r2 = await apiGetUserTodoListDetail(currentList);
+    setDetail(r2.data.results);
   };
 
-  const handleTodoCreate = (e) => {
+  const handleTodoCreate = async (e) => {
     if (user) {
       let data = {
         user_id: user?.id,
         name: e.name,
       };
-      apiPostUserTodoList(data)
-        .then((r) => {
-          console.log(e);
-        })
-        .catch((r) => {
-          console.log(r);
-        });
+      const r = await apiPostUserTodoList(data);
+      if (r.status === 201) {
+        openNotificationWithIcon("success", "Tạo danh sách mới thành công");
+      } else {
+        openNotificationWithIcon("error", "Thất bại tạo danh sách mới");
+      }
       handleReload();
     }
+  };
+
+  const handleTodoDetailCreate = async (e) => {
+    if (user) {
+      if (e.name === undefined) return;
+      let data = {
+        name: e.name,
+        list_id: currentList,
+      };
+      const r = await apiPostTodoDetail(data);
+      console.log(r);
+      if (r.status === 201) {
+        openNotificationWithIcon("success", "Thêm mới việc cần làm thành công");
+      } else {
+        openNotificationWithIcon("error", "Đã có lỗi trong quá trình thêm mới");
+      }
+      const r2 = await apiGetUserTodoListDetail(currentList);
+      setDetail(r2.data.results);
+    }
+  };
+
+  const handleDeleteList = async () => {
+    console.log("Delete");
+    const r = await apiDeleteTodoList(currentList);
+    console.log(r);
+    if (r.status === 204) {
+      openNotificationWithIcon("success", "Xóa danh sách thành công");
+    }
+    handleReload();
   };
 
   return (
     <div className="TodoPage">
       <div>
-        <Row>
-          <h4>Todo Page: List {currentList}</h4>
-        </Row>
-
-        <Row>
-          <Button type="primary">Thêm mới</Button>
-          <Button type="danger">Xóa</Button>
-          <Button onClick={handleReload} type="">
-            Làm mới
-          </Button>
-        </Row>
-
-        <Row>
-          <Form onFinish={handleTodoCreate}>
-            <Form.Item name="name">
-              <Input placeholder="Tên danh sách"></Input>
-            </Form.Item>
-
-            <Form.Item name="name">
-              <Button type="primary" htmlType="submit">
-                Tạo mới
-              </Button>
-            </Form.Item>
-          </Form>
-        </Row>
+        <h4>Danh sách việc cần làm</h4>
       </div>
 
-      <Row>
+      <Row className="mt-3">
         <Col span={6}>
           {list ? (
             <TodoList
@@ -116,14 +124,55 @@ export default function Todo() {
               onClick={handleChangeList}
             />
           ) : (
-            "Không có dữ liệu"
+            <Empty />
           )}
+          <div className="mt-3">
+            <Form onFinish={handleTodoCreate}>
+              <Form.Item name="name" noStyle>
+                <Input placeholder="Thêm danh sách mới"></Input>
+              </Form.Item>
+              <div className="mt-2">
+                <Form.Item name="name" noStyle>
+                  <Button type="primary" htmlType="submit">
+                    Tạo mới
+                  </Button>
+                </Form.Item>
+                <Button
+                  className="mx-2"
+                  type="danger"
+                  onClick={handleDeleteList}
+                >
+                  Xóa hiện tại
+                </Button>
+              </div>
+            </Form>
+          </div>
+
+          <div className="mt-3">
+            <Form onFinish={handleTodoDetailCreate}>
+              <Form.Item name="name" noStyle>
+                <Input placeholder="Thêm việc cần làm mới"></Input>
+              </Form.Item>
+              <div className="mt-2">
+                <Form.Item name="name" noStyle>
+                  <Button type="primary" htmlType="submit">
+                    Tạo mới
+                  </Button>
+                </Form.Item>
+              </div>
+            </Form>
+          </div>
         </Col>
+
         <Col span={24 - 6}>
           {detail ? (
-            <TodoDetail detail={detail} onChangeStatus={handleChangeStatus} />
+            <TodoDetail
+              current={currentList}
+              detail={detail}
+              onChangeState={handleChangeState}
+            />
           ) : (
-            "Không có dữ liệu"
+            <Empty />
           )}
         </Col>
       </Row>

@@ -1,83 +1,350 @@
-import { Row, Col, Image } from "antd";
+import {
+  Upload,
+  Row,
+  Col,
+  Image,
+  List,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Select,
+  Pagination,
+} from "antd";
+import { useState, useEffect } from "react";
+import {
+  apiGetAllCategory,
+  apiGetBlog,
+  apiGetBook,
+  apiGetCategory,
+  apiPostBook,
+  apiPostCategory,
+  api_url,
+  openNotificationWithIcon,
+} from "../../utils/Api";
+import { UploadOutlined } from "@ant-design/icons";
+import axios from "axios";
 
-const ITEMS_DATA = [
-  {
-    name: "Kỹ năng thuyết trình",
-    author: "Trần Hương Giang",
-    year: "2017",
-    url: "https://scontent.fhan2-4.fna.fbcdn.net/v/t1.18169-9/25659234_563289877341634_8836860418612025611_n.jpg?_nc_cat=100&ccb=1-5&_nc_sid=cdbe9c&_nc_ohc=PV4TUD0CFVgAX8wOka8&_nc_ht=scontent.fhan2-4.fna&oh=00_AT87o5gJf2aVY7CnSlRglTI--EpgMd3ECowY1YYbILv0Jw&oe=61F24CF4",
-  },
-  {
-    url: "https://scontent.fhan2-2.fna.fbcdn.net/v/t1.18169-9/25594129_563289880674967_7748849390187785463_n.jpg?_nc_cat=106&ccb=1-5&_nc_sid=cdbe9c&_nc_ohc=Sl_eN51IrE8AX-E3WM7&_nc_ht=scontent.fhan2-2.fna&oh=00_AT-FUkLQhg1IWOO1tJw_I33QqctMPId7bJm4S_JhHDyAXA&oe=61F1AE7B",
-  },
-  {
-    url: "https://scontent.fpnh22-3.fna.fbcdn.net/v/t1.18169-9/26001050_563289934008295_5661351316826222455_n.jpg?_nc_cat=109&ccb=1-5&_nc_sid=cdbe9c&_nc_ohc=vTrr5vqwtUUAX_XmRu3&tn=8IGLZYYyklWatW7r&_nc_ht=scontent.fpnh22-3.fna&oh=00_AT81qjuKn3Q3zDne2j6gxJ9bqsU1ctWE3Xxtfng4SSX8zg&oe=61F0793B",
-  },
-  {
-    url: "https://scontent.fhan2-1.fna.fbcdn.net/v/t1.18169-9/25592131_563289937341628_8496858545576855175_n.jpg?_nc_cat=101&ccb=1-5&_nc_sid=cdbe9c&_nc_ohc=K9UkDpsIu34AX-dutT7&tn=8IGLZYYyklWatW7r&_nc_ht=scontent.fhan2-1.fna&oh=00_AT8cCdDZ1BGKabVXxl9vJNSV_i3QmbKZ4ksk3uRs6vnjVg&oe=61F3A2EB",
-  },
-  {
-    url: "https://scontent.fpnh22-4.fna.fbcdn.net/v/t1.18169-9/25592049_563289940674961_877256632455987515_n.jpg?_nc_cat=111&ccb=1-5&_nc_sid=cdbe9c&_nc_ohc=V-CkVgCJJpgAX_j0CfE&_nc_oc=AQnVDvhh0dGumE9mLnXkg-AD23gdcY8IxRu49KtWJ6L4Ho6nm44nwdtnHvb9pBsXQ2Y&_nc_ht=scontent.fpnh22-4.fna&oh=00_AT_95EOogrlWua0Z72CruXt1JOBLLR4_Kp_a3K2VU0_NOw&oe=61F0C932",
-  },
-  {
-    url: "https://scontent.fhan2-2.fna.fbcdn.net/v/t1.18169-9/25994925_563289977341624_2929543588244036663_n.jpg?_nc_cat=110&ccb=1-5&_nc_sid=cdbe9c&_nc_ohc=rg46fbWMFQkAX8WwGju&_nc_oc=AQlqyFOh1Qyq0OVqYDtRv7ZMu8Hr5-pPhq_2ijtF5-ZVtvMEQkMV6hEcwt9xHf8Q7MI&tn=8IGLZYYyklWatW7r&_nc_ht=scontent.fhan2-2.fna&oh=00_AT8n34vOgfYy6KTJoAyYsEIhaWLmhMRZ6loyFEVQO7Knmw&oe=61F086F1",
-  },
-];
+function CategoryList(props) {
+  const [list, setList] = useState([{}]);
+  const [pagination, setPagination] = useState();
+  useEffect(() => {
+    apiGetCategory()
+      .then((r) => {
+        setList(r.data.results);
+        setPagination(r.data);
+      })
+      .catch((r) => console.log(r));
+  }, []);
+
+  const handleChangePage = (e) => {
+    apiGetCategory({ page: e })
+      .then((r) => {
+        setList(r.data.results);
+        setPagination(r.data);
+      })
+      .catch((r) => console.log(r));
+  };
+
+  return (
+    <div className="" style={{ background: "white" }}>
+      <List
+        dataSource={list}
+        renderItem={(item) => {
+          return (
+            <List.Item>
+              <Button
+                onClick={() => props.onChooseCategory(item)}
+                className="mx-2"
+              >
+                {item.name}
+              </Button>
+            </List.Item>
+          );
+        }}
+      />
+      <Pagination
+        defaultCurrent={1}
+        onChange={handleChangePage}
+        total={pagination?.count ? pagination?.count : 1}
+      />
+    </div>
+  );
+}
+
+function BookList(props) {
+  const [pagination, setPagination] = useState();
+
+  return (
+    <div className="mx-2 p-3" style={{ background: "white" }}>
+      <List
+        grid={{ gutter: 1, column: 5 }}
+        dataSource={props.data}
+        renderItem={(item) => {
+          return (
+            <div className="d-flex flex-column justify-content-center ">
+              <div className="d-flex justify-content-center">
+                <Image width={"13em"} src={item.url} />
+              </div>
+              <h6 className="text-center">{item.name}</h6>
+            </div>
+          );
+        }}
+      ></List>
+      <Pagination
+        defaultCurrent={1}
+        onChange={props.onChangePage}
+        total={
+          props.pagination.pagination?.count
+            ? props.pagination.pagination?.count
+            : 1
+        }
+      />
+    </div>
+  );
+}
+
+const CategoryCreateForm = ({ visible, onCreate, onCancel }) => {
+  const [form] = Form.useForm();
+  return (
+    <Modal
+      visible={visible}
+      title="Tạo mục mới"
+      okText="Tạo"
+      cancelText="Hủy"
+      onCancel={onCancel}
+      onOk={() => {
+        form
+          .validateFields()
+          .then((values) => {
+            form.resetFields();
+            onCreate(values);
+          })
+          .catch((info) => {
+            console.log("Validate Failed:", info);
+          });
+      }}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        name="form_in_modal"
+        initialValues={{
+          modifier: "public",
+        }}
+      >
+        <Form.Item
+          name="name"
+          label="Tên sách"
+          rules={[
+            {
+              required: true,
+              message: "Tên mục không được để trống!",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
+
+const BookCreateForm = ({ visible, onCreate, onCancel }) => {
+  const [category, setCategory] = useState([]);
+  const [fileList, setFileList] = useState([]);
+
+  useEffect(() => {
+    apiGetAllCategory().then((r) => {
+      setCategory(r.data.results);
+    });
+  }, []);
+
+  const [form] = Form.useForm();
+  return (
+    <Modal
+      visible={visible}
+      title="Tạo sách mới"
+      okText="Tạo"
+      cancelText="Hủy"
+      onCancel={onCancel}
+      onOk={() => {
+        form
+          .validateFields()
+          .then((values) => {
+            form.resetFields();
+            onCreate(values);
+          })
+          .catch((info) => {
+            console.log("Validate Failed:", info);
+          });
+      }}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        name="form_in_modal"
+        initialValues={{
+          modifier: "public",
+        }}
+      >
+        <Form.Item
+          name="name"
+          label="Tên sách"
+          rules={[
+            {
+              required: true,
+              message: "Tên sách không được để trống!",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          name="category"
+          label="Tên mục"
+          rules={[
+            {
+              required: true,
+              message: "Tên mục không được để trống!",
+            },
+          ]}
+        >
+          <Select style={{ width: 120 }}>
+            {category.map((cat) => {
+              return <Select.Option value={cat.id}>{cat.name}</Select.Option>;
+            })}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="url"
+          label="Đính kèm"
+          rules={[
+            {
+              required: true,
+              message: "Không được để trống đính kèm!",
+            },
+          ]}
+        >
+          <Upload
+            maxCount={1}
+            name="url"
+            action={`${api_url}/upload`}
+            listType="picture"
+            onChange={({ fileList }) => {
+              setFileList(fileList);
+            }}
+            beforeUpload={() => false}
+          >
+            <Button icon={<UploadOutlined />}>Click to upload</Button>
+          </Upload>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
 
 export default function Library() {
+  const [categoryModal, setCategoryModal] = useState(false);
+  const [bookModal, setBookModal] = useState(false);
+  const [books, setBooks] = useState();
+  const [currentCat, setCurrentCat] = useState();
+  const [pagination, setPagination] = useState();
+
+  const handleCreateCategory = async (e) => {
+    setCategoryModal(!categoryModal);
+    const r = await apiPostCategory({ name: e.name });
+    console.log(r);
+    if (r.status === 201) {
+      openNotificationWithIcon("success", "Tạo mục mới thành công");
+    } else {
+      openNotificationWithIcon("error", "Tạo mục mới thất bại");
+    }
+  };
+
+  const handleCreateBook = (e) => {
+    let formData = new FormData();
+    formData.append("attached_file", e.url.fileList[0]?.originFileObj);
+    axios
+      .post(`${api_url}/upload/`, formData)
+      .then(async (res) => {
+        console.log(res);
+        let data = {
+          url: res?.data?.attached_file,
+          category: e.category,
+          name: e.name,
+        };
+        const r = await apiPostBook(data);
+        console.log(r);
+        if (r.status === 201) {
+          openNotificationWithIcon("success", "Gửi tin nhắn thành công");
+          const r = await apiGetBook({ category: currentCat });
+          setBooks(r.data.results);
+        }
+      })
+      .catch((err) => {
+        console.log("err", err);
+      });
+  };
+
+  const handleChooseCategory = async (e) => {
+    console.log("Change Cat: ", e);
+    setCurrentCat(e.id);
+    const r = await apiGetBook({ category: e.id });
+    console.log(r.data);
+    setPagination(r.data);
+    setBooks(r.data.results);
+  };
+
+  const handleChangePage = async (page) => {
+    const r = await apiGetBook({ category: currentCat, page: page });
+    setPagination(r.data);
+    setBooks(r.data.results);
+  };
+
   return (
     <div className="LibraryPage">
-      <Row gutter={[16, 16]}>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[0].url}></Image>
+      <Row>
+        <Col span={6}>
+          <Button
+            className="mb-3"
+            onClick={() => setCategoryModal(!categoryModal)}
+          >
+            Tạo mục mới
+          </Button>
+          <Button
+            className="mb-3 mx-2"
+            onClick={() => setBookModal(!bookModal)}
+          >
+            Tạo sách mới
+          </Button>
+          <CategoryList onChooseCategory={handleChooseCategory} />
         </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[1].url}></Image>
-        </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[2].url}></Image>
-        </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[3].url}></Image>
-        </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[4].url}></Image>
-        </Col>
-      </Row>
-      <Row gutter={[16, 16]}>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[5].url}></Image>
-        </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[0].url}></Image>
-        </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[1].url}></Image>
-        </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[2].url}></Image>
-        </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[3].url}></Image>
+        <Col span={24 - 6}>
+          <BookList
+            data={books}
+            pagination={{ pagination, setPagination }}
+            onChangePage={handleChangePage}
+          />
         </Col>
       </Row>
-      <Row gutter={[16, 16]}>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[4].url}></Image>
-        </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[5].url}></Image>
-        </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[0].url}></Image>
-        </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[1].url}></Image>
-        </Col>
-        <Col>
-          <Image width={200} src={ITEMS_DATA[2].url}></Image>
-        </Col>
-      </Row>
+
+      <CategoryCreateForm
+        visible={categoryModal}
+        onCreate={handleCreateCategory}
+        onCancel={() => {
+          setCategoryModal(!categoryModal);
+        }}
+      />
+      <BookCreateForm
+        visible={bookModal}
+        onCreate={handleCreateBook}
+        onCancel={() => {
+          setBookModal(!bookModal);
+        }}
+      />
     </div>
   );
 }

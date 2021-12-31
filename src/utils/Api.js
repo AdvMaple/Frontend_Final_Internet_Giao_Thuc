@@ -1,8 +1,15 @@
 import axios from "axios";
 import qs from "qs";
-var fs = require("fs");
+import { notification } from "antd";
 
 const api_url = "http://127.0.0.1:8000";
+
+const openNotificationWithIcon = (type, title, message) => {
+  notification[type]({
+    message: title,
+    description: message,
+  });
+};
 
 function getCurrentDate() {
   let today = new Date();
@@ -64,7 +71,9 @@ function apiPostUserTodoList(data) {
 function getUserMail(data) {
   var config = {
     method: "get",
-    url: `${api_url}/mail/?author=${data?.user_id}`,
+    url: `${api_url}/mail/?author=${data.user_id}&page=${
+      data?.page ? data?.page : 1
+    }`,
     headers: {},
   };
 
@@ -96,7 +105,7 @@ function apiPostBlog(d) {
 
   var config = {
     method: "post",
-    url: `${api_url}/blog/`,
+    url: `${api_url}/blog_create/`,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
@@ -106,10 +115,31 @@ function apiPostBlog(d) {
   return axios(config);
 }
 
-function apiGetBlog() {
+function apiPostMail(d) {
+  let data = qs.stringify({
+    subject: d.subject,
+    content: d.content,
+    to: d.to,
+    attachment: d.attachment,
+    otherInfo: d.otherInfo,
+    author: d.author,
+  });
+  let config = {
+    method: "post",
+    url: `${api_url}/mail_create/`,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    data: data,
+  };
+
+  return axios(config);
+}
+
+function apiGetBlog(page) {
   var config = {
     method: "get",
-    url: `${api_url}/blog/`,
+    url: `${api_url}/blog/?page=${page ? page : 1}`,
     headers: {},
   };
 
@@ -134,10 +164,9 @@ function apiPostClass(d) {
 }
 
 function apiGetClass(d) {
-  const { id } = d;
   var config = {
     method: "get",
-    url: `${api_url}/class/?teacherId=${id}`,
+    url: `${api_url}/class/?teacherId=${d?.id}&page=${d?.page ? d.page : 1}`,
     headers: {},
   };
 
@@ -179,11 +208,174 @@ function apiPostStudent(d) {
 
   return axios(config);
 }
+
+function apiGetUserTodoListDetail(list_id) {
+  let config = {
+    method: "get",
+    url: `${api_url}/todo_detail/?list_id=${list_id}`,
+    headers: {},
+  };
+
+  return axios(config);
+}
+
+function apiPatchUserTodoListDetail(d) {
+  let data = qs.stringify({
+    name: d?.name,
+    state: d?.state,
+  });
+  let config = {
+    method: "patch",
+    url: `${api_url}/todo_detail/${d?.id}`,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    data: data,
+  };
+
+  return axios(config);
+}
+
+function apiDeleteMail(d) {
+  let config = {
+    method: "delete",
+    url: `${api_url}/mail/${d.id}`,
+    headers: {},
+  };
+
+  return axios(config);
+}
+
+function apiPostCategory(d) {
+  let data = qs.stringify({
+    name: d.name,
+  });
+  let config = {
+    method: "post",
+    url: `${api_url}/library/`,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    data: data,
+  };
+
+  return axios(config);
+}
+
+function apiGetCategory(d) {
+  let config = {
+    method: "get",
+    url: `${api_url}/library/?page=${d?.page ? d?.page : 1}`,
+    headers: {},
+  };
+
+  return axios(config);
+}
+
+function apiGetBook(d) {
+  console.log(d);
+  let config = {
+    method: "get",
+    url: `${api_url}/book/?category=${d?.category}&page=${
+      d?.page ? d?.page : 1
+    }`,
+    headers: {},
+  };
+
+  return axios(config);
+}
+
+function apiGetAllCategory() {
+  let config = {
+    method: "get",
+    url: `${api_url}/library_all/`,
+    headers: {},
+  };
+
+  return axios(config);
+}
+
+function apiPostBook(d) {
+  let data = qs.stringify({
+    name: d.name,
+    url: d.url,
+    category: d.category,
+  });
+
+  let config = {
+    method: "post",
+    url: `${api_url}/book/`,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    data: data,
+  };
+
+  return axios(config);
+}
+
+function apiDeleteTodoList(id) {
+  let config = {
+    method: "delete",
+    url: `${api_url}/todolist/${id}`,
+    headers: {},
+  };
+
+  return axios(config);
+}
+
+function apiPostTodoDetail(d) {
+  let data = qs.stringify({
+    name: d?.name,
+    list_id: d?.list_id,
+    date_created: getCurrentDate(),
+    date_finished: "",
+    state: 0,
+  });
+  let config = {
+    method: "post",
+    url: `${api_url}/todo_detail/`,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    data: data,
+  };
+
+  return axios(config);
+}
+
+function apiPatchStudent(d) {
+  let data = qs.stringify({
+    name: d.name,
+    studentId: d.studentId,
+    currentResident: d?.currentResident,
+    placeOfBirth: d?.placeOfBirth,
+    isMale: d?.isMale,
+    hasPaidTuition: d?.hasPaidTuition,
+    diem_CC: d?.diem_CC,
+    diem_TH: d?.diem_TH,
+    diem_Final: d?.diem_Final,
+    classId: d.classId,
+  });
+  let config = {
+    method: "patch",
+    url: `${api_url}/student/${d?.id}`,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    data: data,
+  };
+
+  return axios(config);
+}
+
 export {
   api_url,
   apiSignIn,
   apiGetUserTodoList,
   apiPostUserTodoList,
+  apiDeleteTodoList,
+  apiPostTodoDetail,
   getUserMail,
   getBeautifyDate,
   apiUpload,
@@ -193,4 +385,15 @@ export {
   apiGetClass,
   apiGetStudent,
   apiPostStudent,
+  apiPatchStudent,
+  apiGetUserTodoListDetail,
+  apiPatchUserTodoListDetail,
+  apiPostMail,
+  openNotificationWithIcon,
+  apiDeleteMail,
+  apiPostCategory,
+  apiGetCategory,
+  apiGetBook,
+  apiGetAllCategory,
+  apiPostBook,
 };

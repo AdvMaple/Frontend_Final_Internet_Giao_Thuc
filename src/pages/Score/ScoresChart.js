@@ -5,7 +5,6 @@ import { Pie } from "react-chartjs-2";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export function ScoresChart(props) {
-  // console.log(props.data);
   let scoreCat = {
     a: 0,
     b: 0,
@@ -41,10 +40,10 @@ export function ScoresChart(props) {
         label: "# of Votes",
         data: processScore(),
         backgroundColor: [
-          "rgba(255, 99, 132, 0.2)",
-          "rgba(54, 162, 235, 0.2)",
-          "rgba(255, 206, 86, 0.2)",
-          "rgba(75, 192, 192, 0.2)",
+          "rgba(255, 99, 132, 1)",
+          "rgba(54, 162, 235, 1)",
+          "rgba(255, 206, 86, 1)",
+          "rgba(75, 192, 192, 1)",
         ],
         borderColor: [
           "rgba(255, 99, 132, 1)",
@@ -57,5 +56,5 @@ export function ScoresChart(props) {
     ],
   };
 
-  return <Pie data={data} />;
+  return <>{props.data.length !== 0 ? <Pie data={data} /> : ""}</>;
 }

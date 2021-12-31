@@ -3,7 +3,6 @@ import { useEffect } from "react";
 
 export default function ClassList(props) {
   const { onClick, list } = props;
-  console.log(list);
 
   return (
     <div className="border">

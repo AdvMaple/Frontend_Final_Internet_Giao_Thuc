@@ -2,26 +2,25 @@ import { Button, Row } from "antd";
 import { useState } from "react";
 
 export default function TodoItem(props) {
-  // console.log(props.element)
   const [changeButton, setChangeButton] = useState(false);
   let type = "";
   const handleClick = (e) => {
     // console.log(e);
     e.preventDefault();
     let item = {
-      taskName: e.target.taskName.value,
-      status: e.target.status.value,
+      id: props.element.id,
+      name: e.target.name.value,
+      state: e.target.state.value,
       changeType: type,
     };
-    console.log(type);
-    props.onChangeStatus(item);
+    props.onChangeState(item);
   };
 
   return (
     <div className="border d-flex justify-content-center m-2">
       <form onSubmit={handleClick}>
         <Row
-          className="p-3"
+          className="p-2"
           onMouseEnter={() => {
             setChangeButton(!changeButton);
           }}
@@ -29,7 +28,7 @@ export default function TodoItem(props) {
             setChangeButton(!changeButton);
           }}
         >
-          {props.element.status === 0 || !changeButton ? (
+          {props.element.state === 0 || !changeButton ? (
             ""
           ) : (
             <Button
@@ -45,8 +44,8 @@ export default function TodoItem(props) {
               {"<"}
             </Button>
           )}
-          <span className="mx-2">{props.element.taskName}</span>
-          {props.element.status === 2 || !changeButton ? (
+          <span className="mx-2 my-1">{props.element.name}</span>
+          {props.element.state === 2 || !changeButton ? (
             ""
           ) : (
             <Button
@@ -65,14 +64,14 @@ export default function TodoItem(props) {
         <input
           onChange={() => {}}
           hidden
-          name="taskName"
-          value={props.element.taskName}
+          name="name"
+          value={props.element.name}
         ></input>
         <input
           onChange={() => {}}
           hidden
-          name="status"
-          value={props.element.status}
+          name="state"
+          value={props.element.state}
         ></input>
       </form>
     </div>

@@ -1,13 +1,17 @@
 import { Image } from "antd";
+import { getBeautifyDate } from "../../utils/Api";
 
 export default function Post(props) {
   const { data } = props;
+
   return (
     <div className="Post border rounded p-3 my-3">
       <div className="content">
         <p>
           {data?.author ? data.author : "null"} vào lúc{" "}
-          <span>{data?.date_created ? data.date_created : "null"}</span>
+          <span>
+            {data?.date_created ? getBeautifyDate(data.date_created) : "null"}
+          </span>
         </p>
 
         <p>{data?.content ? data.content : "null"}</p>

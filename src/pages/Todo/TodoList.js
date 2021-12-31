@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 export default function TodoList(props) {
   const { onClick, list } = props;
+  console.log(props);
 
   const renderList = () => {
     return list.map((l, key) => {
