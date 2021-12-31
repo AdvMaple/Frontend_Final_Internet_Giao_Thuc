@@ -1,4 +1,4 @@
-import { Button, Row, Col, Form, Input, Empty } from "antd";
+import { Button, Row, Col, Form, Input, Empty, Pagination } from "antd";
 import { useContext, useEffect, useState } from "react";
 import TodoDetail from "./TodoDetail";
 import TodoList from "./TodoList";
@@ -17,6 +17,7 @@ export default function Todo() {
   const { user, setUser } = useContext(UserContext);
   const [list, setList] = useState([]);
   const [currentList, setCurrentList] = useState(0);
+  const [pagination, setPagination] = useState();
   const [detail, setDetail] = useState([{ id: "", name: "", state: "" }]);
   let nextListurl = "";
   let prevListurl = "";
@@ -24,7 +25,10 @@ export default function Todo() {
   useEffect(() => {
     if (user) {
       const { id } = user;
-      apiGetUserTodoList({ user_id: id }).then((r) => setList(r.data.results));
+      apiGetUserTodoList({ user_id: id }).then((r) => {
+        setList(r.data.results);
+        setPagination(r.data);
+      });
     }
   }, []);
 
@@ -109,6 +113,19 @@ export default function Todo() {
     handleReload();
   };
 
+  const handleChangePage = (e) => {
+    if (user) {
+      let data = {
+        user_id: user.id,
+        page: e,
+      };
+      apiGetUserTodoList(data).then((r) => {
+        setList(r.data.results);
+        setPagination(r.data);
+      });
+    }
+  };
+
   return (
     <div className="TodoPage">
       <div>
@@ -118,11 +135,18 @@ export default function Todo() {
       <Row className="mt-3">
         <Col span={6}>
           {list ? (
-            <TodoList
-              current={currentList}
-              list={list}
-              onClick={handleChangeList}
-            />
+            <>
+              <TodoList
+                current={currentList}
+                list={list}
+                onClick={handleChangeList}
+              />
+              <Pagination
+                onChange={handleChangePage}
+                defaultCurrent={1}
+                total={pagination?.count ? pagination?.count : 1}
+              ></Pagination>
+            </>
           ) : (
             <Empty />
           )}

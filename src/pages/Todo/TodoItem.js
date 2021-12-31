@@ -5,7 +5,6 @@ export default function TodoItem(props) {
   const [changeButton, setChangeButton] = useState(false);
   let type = "";
   const handleClick = (e) => {
-    // console.log(e);
     e.preventDefault();
     let item = {
       id: props.element.id,

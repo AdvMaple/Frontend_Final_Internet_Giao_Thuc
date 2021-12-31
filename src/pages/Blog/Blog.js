@@ -47,7 +47,7 @@ export default function Blog() {
       axios
         .post(`${api_url}/upload/`, formData)
         .then((res) => {
-          console.log(res);
+          // console.log(res);
           let data = {
             attachment: res?.data?.attached_file,
             content: e.content,
@@ -55,7 +55,7 @@ export default function Blog() {
           };
           apiPostBlog(data)
             .then((r) => {
-              console.log(r);
+              // console.log(r);
               openNotificationWithIcon("success", "Đăng bài thành công");
               apiGetBlog().then((r) => {
                 setBlogData(r.data.results);

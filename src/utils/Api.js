@@ -39,10 +39,11 @@ function apiSignIn(data) {
 }
 
 function apiGetUserTodoList(data) {
-  const { user_id } = data;
   let config = {
     method: "get",
-    url: `${api_url}/todolist?user_id=${user_id}`,
+    url: `${api_url}/todolist?user_id=${data?.user_id}&page=${
+      data?.page ? data.page : 1
+    }`,
     headers: {},
   };
 

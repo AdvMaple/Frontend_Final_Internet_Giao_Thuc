@@ -188,7 +188,10 @@ export default function Mails() {
   return (
     <div className="MailPage">
       {user ? (
-        <Button onClick={() => setCreateMailModal(!createMailModal)}>
+        <Button
+          onClick={() => setCreateMailModal(!createMailModal)}
+          type="primary"
+        >
           {createMailModal ? "Đọc thư" : "Tạo thư mới"}
         </Button>
       ) : (

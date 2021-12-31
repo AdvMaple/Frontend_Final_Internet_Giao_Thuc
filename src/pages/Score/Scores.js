@@ -455,6 +455,7 @@ export default function Scores() {
         onCancel={() => {
           setEditStudentModal(!editStudentModal);
         }}
+        onDelete={handleDeleteStudent}
         visible={editStudentModal}
         studentData={student}
       />
@@ -463,7 +464,6 @@ export default function Scores() {
         onCancel={() => {
           setCreateStudentModal(!createStudentModal);
         }}
-        onDelete={handleDeleteStudent}
         visible={createStudentModal}
       />
     </div>

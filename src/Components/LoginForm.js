@@ -16,12 +16,12 @@ export default function LoginForm() {
   const [register, setRegister] = useState(false);
 
   const onFinish = (values) => {
-    console.log(user);
+    // console.log(user);
     // console.log(values);
     apiSignIn(values).then(({ data }) => {
       if (data.count === 1) {
         openNotificationWithIcon("success", "Đăng nhập thành công");
-        console.log(data.results[0]);
+        // console.log(data.results[0]);
         setUser(data.results[0]);
         return;
       }
