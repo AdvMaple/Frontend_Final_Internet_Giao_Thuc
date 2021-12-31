@@ -16,6 +16,7 @@ import { GenderChart } from "./GenderChart";
 import TienHocChart from "./TienHocChart";
 import ClassList from "./ClassList";
 import {
+  apiDeleteStudent,
   apiGetClass,
   apiGetStudent,
   apiPatchStudent,
@@ -26,7 +27,13 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../utils/UserContext";
 
-function StudentEditModal({ visible, onCreate, onCancel, studentData }) {
+function StudentEditModal({
+  visible,
+  onCreate,
+  onCancel,
+  onDelete,
+  studentData,
+}) {
   const [form] = Form.useForm();
   const [data, setData] = useState();
   useEffect(() => {
@@ -40,17 +47,31 @@ function StudentEditModal({ visible, onCreate, onCancel, studentData }) {
       okText="Sửa"
       cancelText="Hủy"
       onCancel={onCancel}
-      onOk={() => {
-        form
-          .validateFields()
-          .then((values) => {
-            form.resetFields();
-            onCreate(values);
-          })
-          .catch((info) => {
-            console.log("Validate Failed:", info);
-          });
-      }}
+      footer={[
+        <Button key="delete" onClick={onDelete} type="danger">
+          Xóa
+        </Button>,
+        <Button key="back" onClick={onCancel}>
+          Đóng
+        </Button>,
+        <Button
+          key="save"
+          onClick={() => {
+            form
+              .validateFields()
+              .then((values) => {
+                form.resetFields();
+                onCreate(values);
+              })
+              .catch((info) => {
+                console.log("Validate Failed:", info);
+              });
+          }}
+          type="primary"
+        >
+          Lưu
+        </Button>,
+      ]}
     >
       <Form
         form={form}
@@ -372,6 +393,25 @@ export default function Students() {
       });
   };
 
+  const handleDeleteStudent = async () => {
+    console.log("delete", student.id);
+    setEditStudentModal(!editStudentModal);
+    const r = await apiDeleteStudent(student.id);
+    console.log(r);
+    if (r.status === 204) {
+      openNotificationWithIcon("success", "Xóa học sinh thành công");
+    } else {
+      openNotificationWithIcon("error", "Đã có lỗi khi xóa học sinh");
+    }
+    apiGetStudent(currentClass)
+      .then((r) => {
+        setStudents(r.data.results);
+      })
+      .catch((r) => {
+        console.log(r);
+      });
+  };
+
   const handleCreateStudent = async (e) => {
     setCreateStudentModal(!createStudentModal);
     console.log(currentClass);
@@ -468,6 +508,7 @@ export default function Students() {
         onCancel={() => {
           setEditStudentModal(!editStudentModal);
         }}
+        onDelete={handleDeleteStudent}
         visible={editStudentModal}
         studentData={student}
       />

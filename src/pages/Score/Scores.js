@@ -13,6 +13,7 @@ import {
 } from "antd";
 import ClassList from "../Student/ClassList";
 import {
+  apiDeleteStudent,
   apiGetClass,
   apiGetStudent,
   apiPatchStudent,
@@ -22,9 +23,14 @@ import {
 } from "../../utils/Api";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../utils/UserContext";
-import Item from "antd/lib/list/Item";
 
-function StudentEditModal({ visible, onCreate, onCancel, studentData }) {
+function StudentEditModal({
+  visible,
+  onCreate,
+  onCancel,
+  onDelete,
+  studentData,
+}) {
   const [form] = Form.useForm();
   const [data, setData] = useState();
   useEffect(() => {
@@ -38,17 +44,31 @@ function StudentEditModal({ visible, onCreate, onCancel, studentData }) {
       okText="Sửa"
       cancelText="Hủy"
       onCancel={onCancel}
-      onOk={() => {
-        form
-          .validateFields()
-          .then((values) => {
-            form.resetFields();
-            onCreate(values);
-          })
-          .catch((info) => {
-            console.log("Validate Failed:", info);
-          });
-      }}
+      footer={[
+        <Button key="delete" onClick={onDelete} type="danger">
+          Xóa
+        </Button>,
+        <Button key="back" onClick={onCancel}>
+          Đóng
+        </Button>,
+        <Button
+          key="save"
+          onClick={() => {
+            form
+              .validateFields()
+              .then((values) => {
+                form.resetFields();
+                onCreate(values);
+              })
+              .catch((info) => {
+                console.log("Validate Failed:", info);
+              });
+          }}
+          type="primary"
+        >
+          Lưu
+        </Button>,
+      ]}
     >
       <Form
         form={form}
@@ -68,9 +88,6 @@ function StudentEditModal({ visible, onCreate, onCancel, studentData }) {
             <Input placeholder={data?.studentId}></Input>
           </Form.Item>
 
-          <Form.Item label="Quê quán" name="placeOfBirth">
-            <Input placeholder={data?.placeOfBirth}></Input>
-          </Form.Item>
           <Form.Item label="Điểm chuyên cần" name="diem_CC">
             <InputNumber min="0" max="10" step="0.01"></InputNumber>
           </Form.Item>
@@ -337,7 +354,6 @@ export default function Scores() {
       title: "Điểm tổng kết",
       key: "totalScore",
       render: (item) => {
-        // console.log(item);
         let final = parseFloat(item.diem_Final);
         let cc = parseFloat(item.diem_CC);
         let th = parseFloat(item.diem_TH);
@@ -352,7 +368,6 @@ export default function Scores() {
     setCurrentClass(e);
     apiGetStudent(e)
       .then((r) => {
-        // console.log(r.data.results);
         setStudents(r.data.results);
       })
       .catch((r) => {
@@ -380,11 +395,35 @@ export default function Scores() {
       },
     };
   };
+
+  const handleDeleteStudent = async () => {
+    console.log("delete", student.id);
+    setEditStudentModal(!editStudentModal);
+    const r = await apiDeleteStudent(student.id);
+    console.log(r);
+    if (r.status === 204) {
+      openNotificationWithIcon("success", "Xóa học sinh thành công");
+    } else {
+      openNotificationWithIcon("error", "Đã có lỗi khi xóa học sinh");
+    }
+    apiGetStudent(currentClass)
+      .then((r) => {
+        setStudents(r.data.results);
+      })
+      .catch((r) => {
+        console.log(r);
+      });
+  };
+
   return (
     <div className="ScorePage">
       <Row>
         <Col span={4}>
-          <ClassList list={classList} onClick={handleChangeClass} />
+          <ClassList
+            current={currentClass}
+            list={classList}
+            onClick={handleChangeClass}
+          />
           <Pagination
             onChange={handleChangePage}
             defaultCurrent={1}
@@ -424,6 +463,7 @@ export default function Scores() {
         onCancel={() => {
           setCreateStudentModal(!createStudentModal);
         }}
+        onDelete={handleDeleteStudent}
         visible={createStudentModal}
       />
     </div>

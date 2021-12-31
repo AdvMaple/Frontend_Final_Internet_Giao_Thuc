@@ -369,6 +369,16 @@ function apiPatchStudent(d) {
   return axios(config);
 }
 
+function apiDeleteStudent(id) {
+  let config = {
+    method: "delete",
+    url: `${api_url}/student/${id}`,
+    headers: {},
+  };
+
+  return axios(config);
+}
+
 export {
   api_url,
   apiSignIn,
@@ -386,6 +396,7 @@ export {
   apiGetStudent,
   apiPostStudent,
   apiPatchStudent,
+  apiDeleteStudent,
   apiGetUserTodoListDetail,
   apiPatchUserTodoListDetail,
   apiPostMail,
